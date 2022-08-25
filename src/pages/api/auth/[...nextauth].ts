@@ -17,6 +17,17 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  events: {
+    async createUser(message) {
+      // console.log('createUser', message);
+      await prisma.user.update({
+        where: { id: message.user.id },
+        data: {
+          agoraUid: (new Date().getTime()) % 10000000,
+        },
+      });
+    }
+  },
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
   providers: [

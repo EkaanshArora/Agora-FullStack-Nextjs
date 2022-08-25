@@ -51,6 +51,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     channels      Channel[]
+    agoraUid      Int       @default(0)
 }
 
 model VerificationToken {
@@ -64,7 +65,7 @@ model VerificationToken {
 model Channel {
     id        String   @id @default(cuid())
     name      String
-    createdAt DateTime
+    createdAt DateTime @default(now())
     userId    String
     createdBy User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
