@@ -1,46 +1,51 @@
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
-import Denied from "../components/denied";
-import Loading from "../components/loading";
+import Link from "next/link";
+import { useState } from "react";
 import { trpc } from "../utils/trpc";
+import styles from './index.module.css';
 
 const Create = () => {
-  const [channel, setChannel] = useState('')
-  const createChannel = trpc.useMutation(["question.createChannel"])
-  const router = useRouter()
+	const [room, setRoom] = useState('')
+	const [description, setDescription] = useState('')
 
-  useEffect(() => {
-    if (createChannel.isSuccess) {
-      router.push('/')
-    }
-  }, [createChannel.isSuccess, router])
-
-  const { status } = useSession()
-
-  if (status === "loading") {
-    return <Loading />
-  }
-
-  if (status === "unauthenticated") {
-    return <Denied />
-  }
-
-  return (
-    <main className="container mx-auto flex flex-col items-center justify-center h-screen p-4">
-      {/* <h1 className="text-5xl md:text-[5rem] leading-normal font-extrabold text-gray-700"> Agora <span className="text-purple-300">Demo</span> </h1> */}
-      <h3 className="text-xl md:text-[5rem] leading-normal font-extrabold text-gray-700">Create Channel</h3>
-      <input className="m-4 form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" type="text" value={channel} onChange={(e) => setChannel(e.target.value)}></input>
-      <div className="m-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={async () => {
-        await createChannel.mutate({ name: channel })
-      }}>Create</div>
-      <p>Status: {createChannel?.status}</p>
-      <p>Data: {createChannel?.data?.name}</p>
-      <p>Error: {createChannel?.error?.message}</p>
-
-      <div onClick={() => router.push('/')} className="m-4 underline text-blue-500 font-bold py-2 px-4 rounded cursor-pointer">Back</div>
-    </main>
-  )
+	const mutation = trpc.useMutation(["auth.createRoom"])
+	return (
+		<div style={{ flexDirection: 'column' }}>
+			<h1 className={styles.title}>
+				Create {mutation.isSuccess ? "Another" : ""} Room
+			</h1>
+			<div style={{ flexDirection: 'column' }}>
+				<div>
+					<label>Name: </label>
+					<input value={room} onChange={(e) => setRoom(e.target.value)} placeholder="roomname" />
+				</div>
+				<br />
+				<div>
+					<label>Description: </label>
+					<input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="description" />
+				</div>
+			</div>
+			<br />
+			<div style={{ color: '#ff3333' }}>{mutation.error?.message}</div>
+			{mutation.status === 'success' ? <div>
+				<span style={{ color: '#33ff33' }}>Success, </span>
+				<Link href="/view">
+					<a style={{ textDecoration: 'underline' }}>view rooms</a>
+				</Link>
+			</div> : <></>}
+			<br />
+			<button className={styles.button}
+				onClick={() => {
+					mutation.mutate({ name: room, description },
+						{
+							onSuccess: () => {
+								setDescription('');
+								setRoom('');
+							}
+						})
+				}}>
+				Create
+			</button >
+		</div >
+	)
 }
-
 export default Create;

@@ -10,8 +10,8 @@ export const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   NEXTAUTH_SECRET: z.string(),
   NEXTAUTH_URL: z.string().url(),
-  GITHUB_CLIENT_ID: z.string(),
-  GITHUB_CLIENT_SECRET: z.string(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
   APP_ID: z.string(),
   APP_CERTIFICATE: z.string(),
 });
@@ -23,6 +23,7 @@ export const serverSchema = z.object({
  */
 export const clientSchema = z.object({
   // NEXT_PUBLIC_BAR: z.string(),
+  NEXT_PUBLIC_APP_ID: z.string(),
 });
 
 /**
@@ -32,5 +33,6 @@ export const clientSchema = z.object({
  * @type {{ [k in keyof z.infer<typeof clientSchema>]: z.infer<typeof clientSchema>[k] | undefined }}
  */
 export const clientEnv = {
+  NEXT_PUBLIC_APP_ID: 'c0c4e9a283a9450aac1a66f2cf980a7a',
   // NEXT_PUBLIC_BAR: process.env.NEXT_PUBLIC_BAR,
 };

@@ -1,29 +1,34 @@
-import React, { useEffect } from "react";
-import { trpc } from '../utils/trpc';
-import UIKit from "agora-react-uikit";
-import { useSession } from "next-auth/react";
+import AgoraUIKit from "agora-react-uikit";
 import { useRouter } from "next/router";
-import AgoraRTC from "agora-rtc-sdk-ng";
-AgoraRTC.setLogLevel(4)
+import { env } from "../env/client.mjs";
+
+import { trpc } from "../utils/trpc";
 
 const Videocall = (props: { channel: string }) => {
-  const q = trpc.useQuery(['question.getToken', { channelName: props.channel }])
   const router = useRouter()
-  const session = useSession()
-
+  const q = trpc.useQuery(['auth.getToken', { channel: props.channel }])
+  if (q.isLoading) return <p>joining...</p>
+  if (q.isError) return <p>error</p>
   return (
-    <div className="flex-1 flex w-screen">
-      {
-        q.isFetched ?
-          <UIKit rtcProps={{ appId: 'c0c4e9a283a9450aac1a66f2cf980a7a', channel: props.channel, uid: q.data?.uid, token: q.data?.rtc, layout: 0 }}
-            rtmProps={{ token: q.data?.rtm, uid: String(q.data?.uid), displayUsername: true, username: session.data?.user?.name! }}
-            callbacks={{ EndCall: () => router.replace('/') }}
+    <>
+      <h2>{props.channel}</h2>
+      {JSON.stringify(q.data)}
+      {q.isSuccess ?
+        <div style={{ width: '100vw', height: '80vh', display: 'flex' }}>
+          <AgoraUIKit
+            rtcProps={{ appId: env.NEXT_PUBLIC_APP_ID, channel: props.channel, token: q.data.rtc, uid: q.data.agoraId }}
+            rtmProps={{ token: q.data.rtm, uid: String(q.data.agoraId) }}
+            callbacks={{
+              EndCall: () => {
+                router.push('/').then(() => { router.reload() })
+              }
+            }}
           />
-          : <></>
+        </div> : <></>
       }
-    </div>
-
+    </>
   )
+
 }
 
 export default Videocall;
